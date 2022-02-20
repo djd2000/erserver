@@ -21,9 +21,15 @@ public class InboundPatientController {
    }
 
    public List<Patient> currentInboundPatients() {
-      ArrayList<Patient> patients = new ArrayList<>();
       String xmlForInbound = transportService.fetchInboundPatients();
       System.out.println("Recieved XML from transport service: \n" + xmlForInbound);
+      ArrayList<Patient> patients = buildPatientsFromXml(xmlForInbound);
+      System.out.println("Returning inbound patients: " + patients.size());
+      return patients;
+   }
+
+   public static ArrayList<Patient> buildPatientsFromXml(String xmlForInbound) {
+      ArrayList<Patient> patients = new ArrayList<>();
       SAXBuilder builder = new SAXBuilder();
       try {
          InputStream stream = new ByteArrayInputStream(xmlForInbound.getBytes("UTF-8"));
@@ -35,6 +41,7 @@ public class InboundPatientController {
             Patient patient = new Patient();
             patient.setTransportId(Integer.parseInt(node.getChildText("TransportId")));
             patient.setName(node.getChildText("Name"));
+            patient.setCondition(node.getChildText("Condition"));
             patient.setPriority(Priority.getByString(node.getChildText("Priority")));
             patients.add(patient);
          }
@@ -43,7 +50,6 @@ public class InboundPatientController {
       } catch (JDOMException jdomex) {
          System.out.println(jdomex.getMessage());
       }
-      System.out.println("Returning inbound patients: " + patients.size());
       return patients;
    }
 
